@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f5f3">
+  <meta name="description" content="Tech Surveillance — a clean, modern workspace for employee and client records.">
+  <title>Tech Surveillance — People &amp; Clients</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #171817;
+      --muted: #858783;
+      --line: #e9eae7;
+      --paper: #fff;
+      --canvas: #f5f5f3;
+      --soft: #f7f7f5;
+      --red: #b94a43;
+      --shadow: 0 24px 80px rgba(19, 20, 18, .13);
+      font-family: "DM Sans", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--canvas); color: var(--ink); }
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(108, 143, 52, .35); outline-offset: 2px;
+    }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 3; display: flex; width: 246px; flex-direction: column;
+      padding: 27px 17px 18px; background: #171817; color: #fff;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px; }
+    .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid #565953; border-radius: 11px; background: #242623; color: #fff; }
+    .brand-name { font: 800 14px/1.2 Manrope, sans-serif; letter-spacing: -.45px; }
+    .brand-caption { margin-top: 3px; color: #92958f; font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+    .side-label { margin: 42px 10px 11px; color: #747770; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; }
+    .nav-btn {
+      display: flex; width: 100%; align-items: center; gap: 12px; border: 0; border-radius: 9px;
+      padding: 11px 12px; background: transparent; color: #a7aaa4; cursor: pointer; text-align: left;
+      font-size: 12px; font-weight: 600; transition: background .18s, color .18s;
+    }
+    .nav-btn:hover { background: #252725; color: #fff; }
+    .nav-btn.active { background: #292b28; color: #fff; }
+    .nav-btn.active .icon { color: #fff; }
+    .nav-count { margin-left: auto; color: #868983; font-size: 10px; }
+    .icon { width: 17px; height: 17px; flex: 0 0 auto; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .side-bottom { margin-top: auto; }
+    .access-note { margin: 0 4px 18px; border: 1px solid #30322f; border-radius: 12px; padding: 14px; }
+    .access-note-top { display: flex; align-items: center; gap: 8px; color: #eceee9; font-size: 11px; font-weight: 600; }
+    .access-note p { margin: 8px 0 0; color: #969991; font-size: 10px; line-height: 1.65; }
+    .side-user { display: flex; align-items: center; gap: 10px; border-top: 1px solid #30322f; padding: 17px 7px 0; }
+    .avatar-logo { display: grid; width: 33px; height: 33px; place-items: center; border: 1px solid #454842; border-radius: 50%; color: #fff; }
+    .side-user strong { display: block; font-size: 11px; font-weight: 600; }
+    .side-user span { display: block; margin-top: 3px; color: #8e918a; font-size: 10px; }
+    .main { width: calc(100% - 246px); min-height: 100vh; margin-left: 246px; }
+    .topbar {
+      position: sticky; top: 0; z-index: 2; display: flex; height: 68px; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--line); padding: 0 42px; background: rgba(255,255,255,.9); backdrop-filter: blur(14px);
+    }
+    .crumb { color: var(--muted); font-size: 11px; }
+    .crumb strong { color: var(--ink); font-weight: 600; }
+    .top-actions { display: flex; align-items: center; gap: 12px; }
+    .live-badge { display: flex; align-items: center; gap: 7px; color: #666963; font-size: 10px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #555852; box-shadow: 0 0 0 3px #efefed; }
+    .top-date { border-left: 1px solid var(--line); padding-left: 14px; color: #777a74; font-size: 10px; }
+    .mobile-brand { display: none; }
+    .content { max-width: 1430px; margin: 0 auto; padding: 37px 42px 0; }
+    .welcome-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
+    .eyebrow { margin-bottom: 10px; color: #747771; font-size: 10px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 0; font: 700 clamp(25px, 3vw, 35px)/1.18 Manrope, sans-serif; letter-spacing: -1.6px; }
+    .intro { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+    .button {
+      display: inline-flex; min-height: 39px; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent;
+      border-radius: 8px; padding: 0 14px; cursor: pointer; font-size: 11px; font-weight: 600; transition: transform .16s, background .16s;
+    }
+    .button:hover { transform: translateY(-1px); }
+    .button-primary { background: var(--ink); color: #fff; }
+    .button-primary:hover { background: #353734; }
+    .button-outline { border-color: #e2e3df; background: #fff; }
+    .button-outline:hover { background: #f6f7f4; }
+    .button-danger { border-color: #f0d7d4; background: #fff; color: var(--red); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; margin-top: 29px; }
+    .stat-card { min-height: 113px; border: 1px solid var(--line); border-radius: 11px; padding: 17px 18px; background: #fff; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; color: #777a74; font-size: 10px; font-weight: 500; }
+    .stat-icon { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 8px; background: #f2f3ef; color: #373a35; }
+    .stat-icon .icon { width: 14px; height: 14px; }
+    .stat-value { margin-top: 8px; font: 700 25px/1 Manrope, sans-serif; letter-spacing: -.8px; }
+    .stat-note { margin-top: 5px; color: #999c96; font-size: 9px; }
+    .panel { margin-top: 25px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+    .panel-head { display: flex; min-height: 66px; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #eff0ed; padding: 13px 19px; }
+    .panel-title { font: 700 13px Manrope, sans-serif; letter-spacing: -.25px; }
+    .panel-subtitle { margin-top: 4px; color: #989b95; font-size: 10px; }
+    .panel-tools { display: flex; align-items: center; gap: 9px; }
+    .search { position: relative; }
+    .search .icon { position: absolute; top: 10px; left: 11px; width: 14px; height: 14px; color: #969991; }
+    .search input { width: 205px; height: 34px; border: 1px solid #e8e9e5; border-radius: 7px; padding: 0 10px 0 32px; background: #fff; color: var(--ink); font-size: 10px; }
+    .search input::placeholder { color: #a3a59f; }
+    .filter-select { height: 34px; border: 1px solid #e8e9e5; border-radius: 7px; padding: 0 26px 0 9px; background: #fff; color: #666962; font-size: 10px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { height: 39px; padding: 0 16px; background: #fbfbfa; color: #969991; font-size: 9px; font-weight: 600; letter-spacing: .045em; text-transform: uppercase; white-space: nowrap; }
+    td { height: 62px; border-top: 1px solid #f0f1ee; padding: 0 16px; color: #676a64; font-size: 10px; white-space: nowrap; }
+    tbody tr { cursor: pointer; transition: background .14s; }
+    tbody tr:hover { background: #fafbf8; }
+    .person-cell { display: flex; align-items: center; gap: 10px; }
+    .avatar { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; border-radius: 9px; background: #eff0eb; color: #4b4e47; font-size: 10px; font-weight: 700; }
+    .avatar.round { border-radius: 50%; background: #f1f0eb; }
+    .person-name { color: #242623; font-size: 10px; font-weight: 600; }
+    .person-secondary { margin-top: 4px; color: #999c96; font-size: 9px; }
+    .status { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 5px 8px; background: #f0f0ee; color: #4f514c; font-size: 9px; font-weight: 600; }
+    .status::before { width: 5px; height: 5px; border-radius: 50%; background: #737670; content: ""; }
+    .status.inactive { background: #f1f1ef; color: #777a74; }
+    .status.inactive::before { background: #a6a8a2; }
+    .row-arrow { color: #a6a8a2; }
+    .row-arrow .icon { width: 14px; height: 14px; }
+    .empty-state { padding: 52px 20px; text-align: center; }
+    .empty-symbol { display: grid; width: 42px; height: 42px; margin: 0 auto 12px; place-items: center; border-radius: 12px; background: #f1f2ee; color: #555950; }
+    .empty-state strong { display: block; font: 700 13px Manrope, sans-serif; }
+    .empty-state p { margin: 6px 0 14px; color: #92958e; font-size: 10px; }
+    .empty-state .button { min-height: 33px; }
+    .footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 33px; border-top: 1px solid #e6e7e3; padding: 18px 0 22px; color: #90938d; font-size: 9px; }
+    .footer-brand { color: #454842; font-weight: 700; letter-spacing: .01em; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 17px; }
+    .footer-links span { display: inline-flex; align-items: center; gap: 5px; }
+    .footer-links .icon { width: 12px; height: 12px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 10; max-width: calc(100vw - 32px); transform: translateY(15px); border-radius: 9px; padding: 12px 16px; background: #171817; color: #fff; opacity: 0; pointer-events: none; font-size: 11px; transition: .2s; box-shadow: var(--shadow); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 5; display: grid; overflow-y: auto; place-items: center; padding: 22px; background: rgba(17,18,16,.47); backdrop-filter: blur(3px); }
+    .modal { width: min(100%, 590px); max-height: min(90vh, 820px); overflow-y: auto; border-radius: 15px; background: #fff; box-shadow: var(--shadow); }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 21px 23px 17px; }
+    .modal-head h2 { margin: 0; font: 700 19px Manrope, sans-serif; letter-spacing: -.6px; }
+    .modal-head p { margin: 5px 0 0; color: #8f928b; font-size: 10px; }
+    .icon-button { display: grid; width: 30px; height: 30px; place-items: center; border: 0; border-radius: 7px; background: #f3f4f1; color: #5f625b; cursor: pointer; }
+    .icon-button:hover { background: #e9eae6; }
+    .form { padding: 20px 23px 22px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 13px; }
+    .field { display: grid; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: #585b55; font-size: 10px; font-weight: 600; }
+    .field label span { color: #a4a69f; font-weight: 400; }
+    .field input, .field select, .field textarea { width: 100%; min-height: 37px; border: 1px solid #e4e5e1; border-radius: 7px; padding: 9px 10px; background: #fff; color: #242623; font-size: 11px; }
+    .field textarea { min-height: 75px; resize: vertical; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 21px; border-top: 1px solid #eff0ed; padding-top: 15px; }
+    .detail-hero { display: flex; align-items: center; gap: 14px; padding: 21px 23px 16px; }
+    .detail-hero .avatar { width: 54px; height: 54px; border-radius: 15px; font-size: 16px; }
+    .detail-hero .avatar.round { border-radius: 50%; }
+    .detail-hero h3 { margin: 0; font: 700 17px Manrope, sans-serif; letter-spacing: -.5px; }
+    .detail-hero p { margin: 5px 0 8px; color: #858881; font-size: 10px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid #eff0ed; padding: 5px 23px 15px; }
+    .detail-item { padding: 13px 0 8px; }
+    .detail-item label { display: block; margin-bottom: 5px; color: #999c95; font-size: 9px; }
+    .detail-item div { color: #373a35; font-size: 11px; font-weight: 500; overflow-wrap: anywhere; }
+    .detail-notes { margin: 0 23px; border-top: 1px solid #eff0ed; padding: 14px 0; }
+    .detail-notes label { color: #999c95; font-size: 9px; }
+    .detail-notes p { margin: 6px 0 0; color: #51544e; font-size: 11px; line-height: 1.6; white-space: pre-wrap; }
+    .detail-actions { display: flex; justify-content: space-between; gap: 9px; border-top: 1px solid #eff0ed; padding: 14px 23px 18px; }
+    .detail-actions-right { display: flex; gap: 8px; }
+    .hidden { display: none !important; }
+    @media (max-width: 1000px) {
+      .sidebar { width: 214px; }
+      .main { width: calc(100% - 214px); margin-left: 214px; }
+      .content { padding-right: 25px; padding-left: 25px; }
+      .topbar { padding-right: 25px; padding-left: 25px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      th, td { padding-right: 12px; padding-left: 12px; }
+    }
+    @media (max-width: 680px) {
+      .sidebar { position: sticky; top: 0; bottom: auto; width: 100%; height: auto; flex-direction: row; align-items: center; justify-content: space-between; padding: 12px 15px; }
+      .brand { padding: 0; }
+      .brand-mark { width: 31px; height: 31px; }
+      .brand-caption, .side-label, .side-bottom, .nav-btn span, .nav-count { display: none; }
+      .sidebar .nav { display: flex; gap: 4px; }
+      .sidebar .nav-btn { width: 38px; height: 38px; justify-content: center; padding: 0; }
+      .sidebar .nav-btn .icon { width: 18px; height: 18px; }
+      .main { width: 100%; min-height: calc(100vh - 56px); margin-left: 0; }
+      .app { display: block; }
+      .topbar { position: static; height: 45px; padding: 0 17px; }
+      .content { padding: 27px 16px 0; }
+      .welcome-row { align-items: flex-start; }
+      .welcome-row > .button { min-height: 35px; padding: 0 10px; font-size: 10px; }
+      .welcome-row > .button .icon { width: 14px; height: 14px; }
+      h1 { font-size: 26px; letter-spacing: -1.1px; }
+      .intro { max-width: 230px; line-height: 1.5; }
+      .stats { gap: 9px; margin-top: 22px; }
+      .stat-card { min-height: 101px; padding: 13px; }
+      .stat-value { font-size: 22px; }
+      .panel { margin-top: 18px; }
+      .panel-head { align-items: flex-start; flex-direction: column; padding: 15px; }
+      .panel-tools { width: 100%; }
+      .search { flex: 1; }
+      .search input { width: 100%; }
+      .filter-select { max-width: 118px; }
+      .footer { align-items: flex-start; flex-direction: column; margin-top: 23px; }
+      .live-badge { font-size: 9px; }
+      .top-date { display: none; }
+    }
+    @media (max-width: 390px) {
+      .brand-name { font-size: 12px; }
+      .top-actions { gap: 5px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .modal-backdrop { padding: 10px; }
+      .form, .modal-head, .detail-hero { padding-right: 17px; padding-left: 17px; }
+      .detail-grid { padding-right: 17px; padding-left: 17px; }
+      .detail-notes { margin-right: 17px; margin-left: 17px; }
+      .detail-actions { padding-right: 17px; padding-left: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <svg aria-hidden="true" width="0" height="0" style="position:absolute">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-7-7 7 7-7 7"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  </svg>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><svg class="icon"><use href="#i-shield"/></svg></div>
+        <div><div class="brand-name">TECH SURVEILLANCE</div><div class="brand-caption">People workspace</div></div>
+      </div>
+      <div class="side-label">Workspace</div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-btn active" data-view="overview"><svg class="icon"><use href="#i-grid"/></svg><span>Overview</span></button>
+        <button class="nav-btn" data-view="employees"><svg class="icon"><use href="#i-users"/></svg><span>Employees</span><span class="nav-count" id="employeeNavCount">0</span></button>
+        <button class="nav-btn" data-view="clients"><svg class="icon"><use href="#i-briefcase"/></svg><span>Clients</span><span class="nav-count" id="clientNavCount">0</span></button>
+      </nav>
+      <div class="side-bottom">
+        <div class="access-note">
+          <div class="access-note-top"><svg class="icon" style="width:14px;height:14px;color:#fff"><use href="#i-shield"/></svg>Open workspace</div>
+          <p>No login required. Profiles are shared with everyone connected to this server.</p>
+        </div>
+        <div class="side-user">
+          <div class="avatar-logo"><svg class="icon" style="width:16px;height:16px"><use href="#i-shield"/></svg></div>
+          <div><strong>Tech Surveillance</strong><span>People &amp; client records</span></div>
+        </div>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="crumb">Workspace <span style="padding:0 6px;color:#c3c4bf">/</span><strong id="breadcrumb">Overview</strong></div>
+        <div class="top-actions"><div class="live-badge"><span class="live-dot"></span> Workspace active</div><div class="top-date" id="today"></div></div>
+      </header>
+      <div class="content">
+        <section class="welcome-row">
+          <div>
+            <div class="eyebrow" id="eyebrow">People &amp; relationships</div>
+            <h1 id="pageTitle">Good to see you.</h1>
+            <p class="intro" id="pageIntro">One clear place for the people behind your business.</p>
+          </div>
+          <button class="button button-primary" id="mainAddButton"><svg class="icon"><use href="#i-plus"/></svg><span>Add employee</span></button>
+        </section>
+        <section class="stats" aria-label="Workspace statistics">
+          <article class="stat-card"><div class="stat-top"><span>Total employees</span><span class="stat-icon"><svg class="icon"><use href="#i-users"/></svg></span></div><div class="stat-value" id="employeeTotal">0</div><div class="stat-note">People on your team</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Active employees</span><span class="stat-icon"><svg class="icon"><use href="#i-shield"/></svg></span></div><div class="stat-value" id="activeTotal">0</div><div class="stat-note">Currently active</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Total clients</span><span class="stat-icon"><svg class="icon"><use href="#i-briefcase"/></svg></span></div><div class="stat-value" id="clientTotal">0</div><div class="stat-note">Business relationships</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Active clients</span><span class="stat-icon"><svg class="icon"><use href="#i-arrow"/></svg></span></div><div class="stat-value" id="activeClientTotal">0</div><div class="stat-note">Ongoing relationships</div></article>
+        </section>
+        <section class="panel" aria-label="People directory">
+          <div class="panel-head">
+            <div><div class="panel-title" id="listTitle">Your people</div><div class="panel-subtitle" id="listSubtitle">A quick look at your latest records</div></div>
+            <div class="panel-tools">
+              <label class="search"><svg class="icon"><use href="#i-search"/></svg><input id="searchInput" type="search" placeholder="Search people..." aria-label="Search people"></label>
+              <select id="statusFilter" class="filter-select" aria-label="Filter by status"><option value="all">All status</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+              <button class="button button-outline" id="panelAddButton"><svg class="icon" style="width:14px;height:14px"><use href="#i-plus"/></svg><span>Add</span></button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="recordTable">
+              <thead id="tableHead"><tr><th>Person</th><th>Department</th><th>Email</th><th>Location</th><th>Status</th><th></th></tr></thead>
+              <tbody id="recordBody"></tbody>
+            </table>
+            <div class="empty-state hidden" id="emptyState">
+              <div class="empty-symbol"><svg class="icon"><use href="#i-users"/></svg></div>
+              <strong id="emptyTitle">Your directory starts here</strong>
+              <p id="emptyText">Add an employee to create your first profile.</p>
+              <button class="button button-outline" id="emptyAddButton"><svg class="icon" style="width:14px;height:14px"><use href="#i-plus"/></svg>Add your first record</button>
+            </div>
+          </div>
+        </section>
+        <footer class="footer">
+          <div><span class="footer-brand">TECH SURVEILLANCE</span><span> &nbsp;·&nbsp; People, made simple.</span><br><span style="display:inline-block;margin-top:5px">© <span id="year"></span> Tech Surveillance. All rights reserved.</span></div>
+          <div class="footer-links">
+            <span><svg class="icon"><use href="#i-shield"/></svg>Shared across devices</span>
+            <span><svg class="icon"><use href="#i-mail"/></svg>People directory</span>
+            <span><svg class="icon"><use href="#i-clock"/></svg>Always available</span>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </div>
+  <div id="modalRoot"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (function () {
+      "use strict";
+      const STORAGE_KEY = "tech-surveillance-records-v1";
+      const MIGRATION_KEY = "tech-surveillance-records-migrated";
+      const API_BASE = location.protocol === "file:" ? "http://localhost:8000" : "";
+      const state = { view: "overview", search: "", status: "all", records: [], selectedId: null, loading: true, apiError: "" };
+      const $ = (selector) => document.querySelector(selector);
+      const escapeHtml = (value) => String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+      const icon = (name, extraClass) => '<svg class="icon ' + (extraClass || "") + '"><use href="#i-' + name + '"></use></svg>';
+
+      async function requestApi(url, options) {
+        const requestOptions = Object.assign({ headers: { "Content-Type": "application/json" } }, options || {});
+        const response = await fetch(API_BASE + url, requestOptions);
+        if (response.status === 204) return null;
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || ("Request failed (" + response.status + ")."));
+        return result;
+      }
+
+      function getLegacyRecords() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+          return Array.isArray(parsed) ? parsed.filter((record) => record && (record.type === "employee" || record.type === "client")) : [];
+        } catch (error) {
+          console.error("Could not read previous browser-saved records.", error);
+          return [];
+        }
+      }
+
+      function legacyMigrationComplete() {
+        try {
+          return localStorage.getItem(MIGRATION_KEY) === "1";
+        } catch (error) {
+          console.error("Could not check the previous-record migration status.", error);
+          return true;
+        }
+      }
+
+      function markLegacyMigrationComplete() {
+        try {
+          localStorage.setItem(MIGRATION_KEY, "1");
+        } catch (error) {
+          console.error("Could not mark previous records as migrated.", error);
+        }
+      }
+
+      async function refreshRecords() {
+        const wasUnavailable = Boolean(state.apiError);
+        try {
+          let records = await requestApi("/api/records");
+          if (records.length === 0 && !legacyMigrationComplete()) {
+            const oldRecords = getLegacyRecords();
+            for (const record of oldRecords) {
+              await requestApi("/api/records", { method: "POST", body: JSON.stringify(record) });
+            }
+            markLegacyMigrationComplete();
+            if (oldRecords.length) records = await requestApi("/api/records");
+          } else if (records.length > 0) {
+            markLegacyMigrationComplete();
+          }
+          state.records = records;
+          state.apiError = "";
+        } catch (error) {
+          console.error("Could not sync Tech Surveillance records with the shared server.", error);
+          state.apiError = error.message;
+          if (!wasUnavailable) showToast("Shared database unavailable. Check that the server is running.");
+        } finally {
+          state.loading = false;
+          render();
+        }
+      }
+
+      function showToast(message) {
+        const toast = $("#toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(showToast.timeout);
+        showToast.timeout = setTimeout(() => toast.classList.remove("show"), 2800);
+      }
+
+      function initials(name) {
+        return String(name || "?").trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toUpperCase() || "?";
+      }
+
+      function visibleRecords() {
+        const type = state.view === "employees" ? "employee" : state.view === "clients" ? "client" : null;
+        const query = state.search.trim().toLowerCase();
+        return state.records.filter((record) => {
+          if (type && record.type !== type) return false;
+          if (state.status !== "all" && record.status !== state.status) return false;
+          if (!query) return true;
+          return [record.name, record.role, record.department, record.company, record.industry, record.email, record.phone, record.location]
+            .some((value) => String(value || "").toLowerCase().includes(query));
+        }).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+      }
+
+      function render() {
+        const employees = state.records.filter((record) => record.type === "employee");
+        const clients = state.records.filter((record) => record.type === "client");
+        $("#employeeTotal").textContent = employees.length;
+        $("#activeTotal").textContent = employees.filter((record) => record.status === "Active").length;
+        $("#clientTotal").textContent = clients.length;
+        $("#activeClientTotal").textContent = clients.filter((record) => record.status === "Active").length;
+        $("#employeeNavCount").textContent = employees.length;
+        $("#clientNavCount").textContent = clients.length;
+
+        const viewCopy = {
+          overview: ["Overview", "People & relationships", "Good to see you.", "One clear place for the people behind your business.", "Your people", "A quick look at your latest records", "employee"],
+          employees: ["Employees", "Team directory", "Meet your team.", "Every teammate, with the details that matter.", "Employee directory", "Your team, all in one place", "employee"],
+          clients: ["Clients", "Client directory", "Your clients.", "Keep every important relationship close at hand.", "Client directory", "The people and businesses you work with", "client"]
+        }[state.view];
+        $("#breadcrumb").textContent = viewCopy[0];
+        $("#eyebrow").textContent = viewCopy[1];
+        $("#pageTitle").textContent = viewCopy[2];
+        $("#pageIntro").textContent = viewCopy[3];
+        $("#listTitle").textContent = viewCopy[4];
+        $("#listSubtitle").textContent = viewCopy[5];
+        $("#mainAddButton").querySelector("span").textContent = "Add " + viewCopy[6];
+        $("#emptyTitle").textContent = state.loading ? "Connecting to shared records" : state.apiError ? "Shared database unavailable" : state.search || state.status !== "all" ? "No matching records" : state.view === "clients" ? "Your client list starts here" : "Your directory starts here";
+        $("#emptyText").textContent = state.loading ? "Loading records from the shared database..." : state.apiError ? "Start the server on the computer that stores these records, then reload this page." : state.search || state.status !== "all" ? "Try a different search or status filter." : "Add " + (viewCopy[6] === "employee" ? "an employee" : "a client") + " to create your first profile.";
+        $("#emptyAddButton").classList.toggle("hidden", state.loading || Boolean(state.apiError) || Boolean(state.search) || state.status !== "all");
+
+        const isClient = state.view === "clients";
+        $("#tableHead").innerHTML = isClient
+          ? "<tr><th>Client</th><th>Industry</th><th>Email</th><th>Location</th><th>Status</th><th></th></tr>"
+          : "<tr><th>Person</th><th>Department</th><th>Email</th><th>Location</th><th>Status</th><th></th></tr>";
+        const records = visibleRecords();
+        $("#recordBody").innerHTML = records.map((record) => {
+          const secondary = record.type === "employee" ? record.role : record.company;
+          const detail = record.type === "employee" ? (record.department || "—") : (record.industry || "—");
+          return '<tr data-record-id="' + escapeHtml(record.id) + '" tabindex="0" aria-label="View profile for ' + escapeHtml(record.name) + '">' +
+            '<td><div class="person-cell"><div class="avatar ' + (record.type === "client" ? "round" : "") + '">' + escapeHtml(initials(record.name)) + '</div><div><div class="person-name">' + escapeHtml(record.name) + '</div><div class="person-secondary">' + escapeHtml(secondary || (record.type === "employee" ? "Team member" : "Client")) + '</div></div></div></td>' +
+            '<td>' + escapeHtml(detail) + '</td><td>' + escapeHtml(record.email || "—") + '</td><td>' + escapeHtml(record.location || "—") + '</td>' +
+            '<td><span class="status ' + (record.status === "Inactive" ? "inactive" : "") + '">' + escapeHtml(record.status || "Active") + '</span></td><td class="row-arrow">' + icon("chevron") + '</td></tr>';
+        }).join("");
+        const noRecords = records.length === 0;
+        $("#recordTable").classList.toggle("hidden", noRecords);
+        $("#emptyState").classList.toggle("hidden", !noRecords);
+        document.querySelectorAll(".nav-btn").forEach((button) => button.classList.toggle("active", button.dataset.view === state.view));
+      }
+
+      function openForm(type, record) {
+        const isEmployee = type === "employee";
+        const current = record || {};
+        const fields = isEmployee
+          ? [
+            ["name", "Full name", "text", true], ["role", "Job title", "text", true],
+            ["department", "Department", "text", false], ["email", "Email address", "email", false],
+            ["phone", "Phone number", "tel", false], ["location", "Location", "text", false],
+            ["startDate", "Start date", "date", false]
+          ]
+          : [
+            ["name", "Contact name", "text", true], ["company", "Company name", "text", true],
+            ["industry", "Industry", "text", false], ["email", "Email address", "email", false],
+            ["phone", "Phone number", "tel", false], ["location", "Location", "text", false]
+          ];
+        const input = (field) => {
+          const [name, label, inputType, required] = field;
+          return '<div class="field"><label for="field-' + name + '">' + label + (required ? " <span>*</span>" : "") + '</label><input id="field-' + name + '" name="' + name + '" type="' + inputType + '" ' + (required ? "required" : "") + ' value="' + escapeHtml(current[name] || "") + '" ' + (name === "email" ? 'autocomplete="email"' : "") + '></div>';
+        };
+        $("#modalRoot").innerHTML = '<div class="modal-backdrop" data-backdrop><section class="modal" role="dialog" aria-modal="true" aria-labelledby="formTitle">' +
+          '<div class="modal-head"><div><h2 id="formTitle">' + (record ? "Edit " : "Add ") + (isEmployee ? "employee" : "client") + '</h2><p>Fill in the details to create a ' + (isEmployee ? "team member" : "client") + ' profile.</p></div><button class="icon-button" data-close aria-label="Close">' + icon("x") + '</button></div>' +
+          '<form class="form" id="recordForm"><div class="form-grid">' + fields.map(input).join("") +
+          '<div class="field"><label for="field-status">Status</label><select id="field-status" name="status"><option ' + ((current.status || "Active") === "Active" ? "selected" : "") + '>Active</option><option ' + (current.status === "Inactive" ? "selected" : "") + '>Inactive</option></select></div>' +
+          '<div class="field full"><label for="field-notes">' + (isEmployee ? "About this person" : "Notes") + ' <span>Optional</span></label><textarea id="field-notes" name="notes" placeholder="Add any useful details...">' + escapeHtml(current.notes || "") + '</textarea></div></div>' +
+          '<div class="form-actions"><button type="button" class="button button-outline" data-close>Cancel</button><button type="submit" class="button button-primary">' + (record ? "Save changes" : "Create profile") + '</button></div></form></section></div>';
+        $("#field-name").focus();
+        $("#recordForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const formData = new FormData(event.currentTarget);
+          const data = Object.fromEntries(formData.entries());
+          const updated = Object.assign({}, current, data, { type, updatedAt: new Date().toISOString() });
+          const submitButton = event.currentTarget.querySelector('[type="submit"]');
+          submitButton.disabled = true;
+          try {
+            const saved = await requestApi(record ? "/api/records/" + encodeURIComponent(record.id) : "/api/records", {
+              method: record ? "PUT" : "POST",
+              body: JSON.stringify(updated)
+            });
+            state.records = record
+              ? state.records.map((item) => item.id === record.id ? saved : item)
+              : [saved].concat(state.records);
+            state.apiError = "";
+          } catch (error) {
+            console.error("Could not save this profile to the shared database.", error);
+            showToast("Could not save profile: " + error.message);
+            submitButton.disabled = false;
+            return;
+          }
+          closeModal();
+          render();
+          showToast(record ? "Profile updated successfully." : (isEmployee ? "Employee profile created." : "Client profile created."));
+        });
+        bindModalClose();
+      }
+
+      function openProfile(id) {
+        const record = state.records.find((item) => item.id === id);
+        if (!record) return;
+        state.selectedId = id;
+        const isEmployee = record.type === "employee";
+        const items = isEmployee
+          ? [["Job title", record.role], ["Department", record.department], ["Email", record.email], ["Phone", record.phone], ["Location", record.location], ["Start date", record.startDate]]
+          : [["Company", record.company], ["Industry", record.industry], ["Email", record.email], ["Phone", record.phone], ["Location", record.location], ["Relationship", record.status]];
+        $("#modalRoot").innerHTML = '<div class="modal-backdrop" data-backdrop><section class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">' +
+          '<div class="modal-head"><div><div class="eyebrow" style="margin:0">Profile</div></div><button class="icon-button" data-close aria-label="Close">' + icon("x") + '</button></div>' +
+          '<div class="detail-hero"><div class="avatar ' + (isEmployee ? "" : "round") + '">' + escapeHtml(initials(record.name)) + '</div><div><h3 id="profileTitle">' + escapeHtml(record.name) + '</h3><p>' + escapeHtml(isEmployee ? (record.role || "Team member") : (record.company || "Client")) + '</p><span class="status ' + (record.status === "Inactive" ? "inactive" : "") + '">' + escapeHtml(record.status || "Active") + '</span></div></div>' +
+          '<div class="detail-grid">' + items.map((item) => '<div class="detail-item"><label>' + escapeHtml(item[0]) + '</label><div>' + escapeHtml(item[1] || "—") + '</div></div>').join("") + '</div>' +
+          (record.notes ? '<div class="detail-notes"><label>' + (isEmployee ? "About this person" : "Notes") + '</label><p>' + escapeHtml(record.notes) + '</p></div>' : "") +
+          '<div class="detail-actions"><button class="button button-danger" data-delete="' + escapeHtml(record.id) + '">Delete profile</button><div class="detail-actions-right"><button class="button button-outline" data-close>Close</button><button class="button button-primary" data-edit="' + escapeHtml(record.id) + '">Edit profile</button></div></div></section></div>';
+        bindModalClose();
+        $('[data-edit]').addEventListener("click", () => openForm(record.type, record));
+        $('[data-delete]').addEventListener("click", async () => {
+          if (!window.confirm("Delete the profile for " + record.name + "? This cannot be undone.")) return;
+          const deleteButton = $('[data-delete]');
+          deleteButton.disabled = true;
+          try {
+            await requestApi("/api/records/" + encodeURIComponent(record.id), { method: "DELETE" });
+          } catch (error) {
+            console.error("Could not delete this profile from the shared database.", error);
+            showToast("Could not delete profile: " + error.message);
+            deleteButton.disabled = false;
+            return;
+          }
+          state.records = state.records.filter((item) => item.id !== record.id);
+          closeModal();
+          render();
+          showToast("Profile deleted.");
+        });
+      }
+
+      function bindModalClose() {
+        $("#modalRoot").querySelectorAll("[data-close]").forEach((button) => button.addEventListener("click", closeModal));
+        const backdrop = $("#modalRoot").querySelector("[data-backdrop]");
+        backdrop.addEventListener("click", (event) => { if (event.target === backdrop) closeModal(); });
+        document.addEventListener("keydown", onEscape);
+      }
+      function onEscape(event) {
+        if (event.key === "Escape" && $("#modalRoot").firstElementChild) closeModal();
+      }
+      function closeModal() {
+        $("#modalRoot").innerHTML = "";
+        document.removeEventListener("keydown", onEscape);
+      }
+      function addForCurrentView() {
+        openForm(state.view === "clients" ? "client" : "employee");
+      }
+
+      document.querySelectorAll(".nav-btn").forEach((button) => button.addEventListener("click", () => {
+        state.view = button.dataset.view;
+        state.search = "";
+        state.status = "all";
+        $("#searchInput").value = "";
+        $("#statusFilter").value = "all";
+        render();
+      }));
+      $("#searchInput").addEventListener("input", (event) => { state.search = event.target.value; render(); });
+      $("#statusFilter").addEventListener("change", (event) => { state.status = event.target.value; render(); });
+      $("#mainAddButton").addEventListener("click", addForCurrentView);
+      $("#panelAddButton").addEventListener("click", addForCurrentView);
+      $("#emptyAddButton").addEventListener("click", addForCurrentView);
+      $("#recordBody").addEventListener("click", (event) => {
+        const row = event.target.closest("[data-record-id]");
+        if (row) openProfile(row.dataset.recordId);
+      });
+      $("#recordBody").addEventListener("keydown", (event) => {
+        const row = event.target.closest("[data-record-id]");
+        if (row && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); openProfile(row.dataset.recordId); }
+      });
+      $("#today").textContent = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date());
+      $("#year").textContent = new Date().getFullYear();
+      render();
+      refreshRecords();
+      window.setInterval(() => {
+        if (document.visibilityState === "visible" && !$("#modalRoot").firstElementChild) refreshRecords();
+      }, 10000);
+      window.addEventListener("focus", () => {
+        if (!$("#modalRoot").firstElementChild) refreshRecords();
+      });
+    })();
+  </script>
+</body>
+</html>
